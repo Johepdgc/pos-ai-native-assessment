@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#153a38">
+  <title>Mostrador · Punto de venta</title>
+  <link rel="stylesheet" href="/app.css">
+</head>
+<body>
+  <div id="app">
+    <v-app>
+      <header class="topbar">
+        <div class="brand"><span class="brand-mark">M</span><div><strong>Mostrador</strong><small>PUNTO DE VENTA</small></div></div>
+        <span class="topbar-note">Una venta a la vez, sin distracciones.</span>
+      </header>
+      <v-main>
+        <div class="workspace">
+          <div class="intro-row">
+            <div><div class="eyebrow">OPERACIÓN DIARIA</div><h1>Tu mostrador, en orden.</h1><p>Busca productos y prepara la siguiente venta.</p></div>
+            <v-btn color="primary" depressed large @click="dialog = true"><v-icon left>mdi-plus</v-icon> Nuevo producto</v-btn>
+          </div>
+          <v-alert v-if="notice" dense dismissible :type="noticeType" @input="notice = ''">{{ notice }}</v-alert>
+          <section class="catalog-panel">
+            <div class="section-head"><div><div class="eyebrow">CATÁLOGO</div><h2>Productos</h2></div><span class="count-label">{{ products.length }} resultados</span></div>
+            <v-text-field v-model="search" solo flat hide-details clearable prepend-inner-icon="mdi-magnify" label="Buscar por nombre o código de barras" class="search-input" @input="scheduleSearch"></v-text-field>
+            <div v-if="loading" class="empty-state">Buscando productos…</div>
+            <div v-else-if="products.length === 0" class="empty-state"><v-icon large color="grey lighten-1">mdi-package-variant</v-icon><strong>No hay productos para mostrar</strong><span>Crea uno nuevo o prueba otra búsqueda.</span></div>
+            <div v-else class="product-list">
+              <div v-for="product in products" :key="product.id" class="product-row"><div class="product-avatar">{{ product.name.charAt(0).toUpperCase() }}</div><div class="product-copy"><strong>{{ product.name }}</strong><span>{{ product.barcode }}</span></div><strong class="product-price">{{ money(product.price) }}</strong></div>
+            </div>
+          </section>
+        </div>
+      </v-main>
+      <v-dialog v-model="dialog" max-width="480" persistent>
+        <v-card class="product-dialog"><v-card-title class="dialog-title">Nuevo producto</v-card-title><v-card-text><p class="dialog-subtitle">Agrega un producto al catálogo para encontrarlo en una venta.</p><v-form ref="form" v-model="formValid" @submit.prevent="saveProduct"><v-text-field v-model="form.name" label="Nombre" outlined dense :rules="[v => !!v && v.trim().length >= 2 || 'Escribe al menos 2 caracteres']"></v-text-field><v-text-field v-model="form.barcode" label="Código de barras" outlined dense :rules="[v => /^[A-Za-z0-9._-]{3,80}$/.test(v || '') || 'Usa entre 3 y 80 letras, números, puntos, guiones o guion bajo']"></v-text-field><v-text-field v-model="form.price" label="Precio" outlined dense prefix="$" inputmode="decimal" :rules="[v => validPrice(v) || 'Indica un precio mayor que cero, con hasta 2 decimales']"></v-text-field></v-form></v-card-text><v-card-actions><v-spacer></v-spacer><v-btn text @click="closeDialog">Cancelar</v-btn><v-btn color="primary" depressed :loading="saving" @click="saveProduct">Guardar producto</v-btn></v-card-actions></v-card>
+      </v-dialog>
+    </v-app>
+  </div>
+  <script src="/app.js"></script>
+</body>
+</html>
