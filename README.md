@@ -23,7 +23,7 @@ No se implementan impresión, documentos, reportes, inventario, control de caja,
 - Vue 2.7.16; Vuetify 2.7.2; Axios 1.7.9; esbuild 0.24.2.
 - MySQL 8.4 para ejecución reproducible con Docker Compose.
 
-Vue 2 se usa porque la prueba lo exige. Para un producto de larga duración habría que planear su migración y mantenimiento.
+Vue 2 forma parte del stack definido para esta implementación. Para un producto de larga duración habría que planear su migración y mantenimiento.
 
 ## Estructura
 
@@ -121,14 +121,14 @@ El smoke test crea un producto y una venta de prueba con barcode único en la ba
 
 La rama de entrega es `ProductionEnv`. `feature/products` contiene el primer entregable y `feature/sales` el segundo; cada una se integró con un merge identificable. Se conservaron commits separados para que la secuencia pueda revisarse.
 
-Se utilizó **OpenAI Codex** como agente que trabajó directamente sobre el repositorio: definió el diseño inicial, creó archivos, integró frontend y backend, preparó SQL, ejecutó compilaciones, verificó flujos y corrigió los problemas observados.
+Se utilizó **OpenAI Codex** como agente que trabajó directamente sobre el repositorio: convirtió el stack y la arquitectura planteados por el candidato en código, creó archivos, integró frontend y backend, preparó SQL, ejecutó compilaciones, verificó flujos y corrigió los problemas observados.
 
 ### Decisiones técnicas relevantes tomadas por el candidato y propuestas de IA modificadas o descartadas
 
-- **Propuestas explícitas del candidato:** aplicar los principios **SOLID** y organizar el proyecto con **arquitectura hexagonal**; priorizar la calidad del código y la funcionalidad dentro del plazo de la prueba. Después solicitó revisar UI y UX con las Web Interface Guidelines antes de cerrar la entrega.
-- **Decisiones propuestas e implementadas por Codex:** separar dominio, casos de uso y adaptadores; mantener el dominio independiente de Express, Sequelize y Vue; usar `DECIMAL` en MySQL y centavos enteros para los cálculos del cliente; conservar el precio usado en cada línea de venta; validar en el cliente, el servidor y el procedimiento; y registrar la venta mediante un procedimiento almacenado real dentro de una transacción. La decisión de no limitar el procedimiento a una consulta simple fue de Codex para demostrar persistencia atómica y rollback.
+- **Propuestas explícitas del candidato:** trabajar con **Node.js, Express, Sequelize, MySQL, Vue 2, Vuetify y Axios** como stack principal; aplicar los principios **SOLID** y organizar el proyecto con **arquitectura hexagonal**; priorizar la calidad del código y la funcionalidad dentro del plazo disponible. Después solicitó revisar UI y UX con las Web Interface Guidelines antes de cerrar la entrega.
+- **Decisiones de implementación de Codex a partir de ese enfoque:** separar dominio, casos de uso y adaptadores; mantener el dominio independiente de Express, Sequelize y Vue; usar `DECIMAL` en MySQL y centavos enteros para los cálculos del cliente; conservar el precio usado en cada línea de venta; validar en el cliente, el servidor y el procedimiento; y registrar la venta mediante un procedimiento almacenado real dentro de una transacción. La decisión de no limitar el procedimiento a una consulta simple fue de Codex para demostrar persistencia atómica y rollback.
 - **Modificaciones o descartes del candidato a propuestas de IA:** en el intercambio no quedó documentada una propuesta técnica concreta de Codex que el candidato haya modificado o descartado personalmente. No se le atribuye una decisión que no consta en el registro.
-- **Participación verificable del candidato:** facilitó la prueba y los criterios de arquitectura, completó el acceso necesario para publicar el repositorio, ejecutó la aplicación en su terminal y confirmó que funcionaba. La revisión de UI y UX y las correcciones resultantes fueron solicitadas por él y ejecutadas por Codex.
+- **Participación verificable del candidato:** estableció el stack y el enfoque de arquitectura, completó el acceso necesario para publicar el repositorio, ejecutó la aplicación en su terminal y confirmó que funcionaba. La revisión de UI y UX y las correcciones resultantes fueron solicitadas por él y ejecutadas por Codex.
 
 **Revisión personal antes de enviar:** el candidato ya confirmó el funcionamiento de la aplicación. Aún debe leer personalmente el diff y el procedimiento, confirmar que puede explicar las decisiones y anotar aquí cualquier corrección o propuesta de IA que realmente decida modificar o descartar. Codex no puede atribuirse esa revisión personal en su nombre.
 
