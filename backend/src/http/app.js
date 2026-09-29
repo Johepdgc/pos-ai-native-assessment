@@ -34,6 +34,9 @@ function createApp({ products, sales }) {
     if (error instanceof SyntaxError && 'body' in error) {
       return res.status(400).json({ error: 'INVALID_JSON', message: 'El JSON de la solicitud es inválido.' });
     }
+    if (error.type === 'entity.too.large') {
+      return res.status(413).json({ error: 'PAYLOAD_TOO_LARGE', message: 'La solicitud excede el tamaño permitido.' });
+    }
     console.error(error);
     res.status(500).json({ error: 'INTERNAL_ERROR', message: 'No se pudo completar la operación.' });
   });

@@ -1,6 +1,7 @@
 const { DomainError } = require('../domain/errors');
 const { normalizeProduct } = require('../domain/product');
 
+/** @param {import('./ports').ProductRepository} products */
 function createProductsUseCases(products) {
   return {
     async create(input) {

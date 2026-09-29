@@ -30,7 +30,7 @@ Vue 2 se usa porque la prueba lo exige. Para un producto de larga duración habr
 ```text
 backend/src/
   domain/          Reglas puras: datos de producto y líneas de venta
-  application/     Casos de uso y puertos implícitos de repositorio
+  application/     Casos de uso y contratos de puertos de repositorio
   infrastructure/  Adaptadores Sequelize y procedimiento MySQL
   http/            Adaptador Express, validación de transporte y errores
   server.js        Composición de dependencias
@@ -41,7 +41,7 @@ db/               Scripts SQL reproducibles
 scripts/          Compilación del frontend
 ```
 
-Las dependencias apuntan hacia el dominio: las reglas de negocio no importan Express, Sequelize, Vue ni MySQL. Los casos de uso reciben repositorios por parámetro. La composición concreta ocurre en `server.js`. Se eligió esta separación porque facilita revisar y sustituir adaptadores sin convertir una prueba pequeña en un marco de clases innecesario.
+Las dependencias apuntan hacia el dominio: las reglas de negocio no importan Express, Sequelize, Vue ni MySQL. Los casos de uso reciben los puertos de repositorio por parámetro; sus contratos están documentados en `application/ports.js`. La composición concreta ocurre en `server.js`. Cada caso de uso cumple una operación y los adaptadores concentran las decisiones de HTTP y MySQL. Esto permite cambiar una implementación de persistencia sin modificar las reglas del dominio.
 
 ## Instalación rápida
 
