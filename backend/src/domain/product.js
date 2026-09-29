@@ -2,8 +2,8 @@ const { DomainError } = require('./errors');
 
 function priceToCents(value) {
   const text = String(value ?? '').trim();
-  if (!/^(?:0|[1-9]\d{0,9})(?:\.\d{1,2})?$/.test(text)) {
-    throw new DomainError('El precio debe ser un número positivo con hasta dos decimales.');
+  if (!/^(?:0|[1-9]\d{0,5})(?:\.\d{1,2})?$/.test(text)) {
+    throw new DomainError('El precio debe estar entre 0.01 y 999999.99, con hasta dos decimales.');
   }
   const [whole, fraction = ''] = text.split('.');
   const cents = Number(whole) * 100 + Number(fraction.padEnd(2, '0'));

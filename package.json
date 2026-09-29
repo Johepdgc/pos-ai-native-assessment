@@ -6,10 +6,10 @@
     "build": "node scripts/build.mjs",
     "start": "node backend/src/server.js",
     "dev": "npm run build && npm start",
-    "test": "node --test backend/test/*.test.js"
+    "test": "node --test backend/test/*.test.js",
+    "smoke": "node scripts/smoke.mjs"
   },
   "dependencies": {
-    "@mdi/font": "7.4.47",
     "axios": "1.7.9",
     "dotenv": "16.4.7",
     "express": "4.21.2",

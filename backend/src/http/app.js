@@ -3,7 +3,7 @@ const path = require('node:path');
 const { UniqueConstraintError } = require('sequelize');
 const { DomainError } = require('../domain/errors');
 
-function createApp({ products }) {
+function createApp({ products, sales }) {
   const app = express();
   app.disable('x-powered-by');
   app.use(express.json({ limit: '100kb' }));
@@ -16,6 +16,10 @@ function createApp({ products }) {
   app.post('/api/products', route(async (req, res) => {
     res.status(201).json(await products.create(req.body));
   }));
+  app.post('/api/sales', route(async (req, res) => {
+    res.status(201).json(await sales.create(req.body));
+  }));
+  app.use('/api', (req, res) => res.status(404).json({ error: 'NOT_FOUND', message: 'Ruta no encontrada.' }));
   const dist = path.resolve(__dirname, '../../../frontend/dist');
   app.use(express.static(dist));
   app.get('*', (req, res) => res.sendFile(path.join(dist, 'index.html')));

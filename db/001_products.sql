@@ -11,5 +11,5 @@ CREATE TABLE IF NOT EXISTS products (
   PRIMARY KEY (id),
   UNIQUE KEY uq_products_barcode (barcode),
   KEY ix_products_name (name),
-  CONSTRAINT chk_products_price CHECK (price > 0)
+  CONSTRAINT chk_products_price CHECK (price > 0 AND price <= 999999.99)
 ) ENGINE=InnoDB;

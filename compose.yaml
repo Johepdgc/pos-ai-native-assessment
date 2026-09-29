@@ -1,0 +1,22 @@
+services:
+  db:
+    image: mysql:8.4
+    environment:
+      MYSQL_ROOT_PASSWORD: local_root_password
+      MYSQL_DATABASE: pos_assessment
+      MYSQL_USER: pos_app
+      MYSQL_PASSWORD: local_pos_password
+    ports:
+      - "3307:3306"
+    volumes:
+      - pos_mysql_data:/var/lib/mysql
+      - ./db/001_products.sql:/docker-entrypoint-initdb.d/001_products.sql:ro
+      - ./db/002_sales.sql:/docker-entrypoint-initdb.d/002_sales.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -uroot -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+volumes:
+  pos_mysql_data:

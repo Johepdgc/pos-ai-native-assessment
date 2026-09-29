@@ -5,6 +5,7 @@ await mkdir('frontend/dist', { recursive: true });
 await build({
   entryPoints: ['frontend/src/main.js'],
   bundle: true,
+  alias: { vue: 'vue/dist/vue.esm.js' },
   minify: true,
   sourcemap: true,
   outfile: 'frontend/dist/app.js',
