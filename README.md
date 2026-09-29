@@ -18,7 +18,7 @@ No se implementan impresión, documentos, reportes, inventario, control de caja,
 
 ## Tecnologías
 
-- Node.js 20 o superior; desarrollado con Node.js 24.
+- Node.js 20 o superior; verificado con Node.js 26.7.0.
 - Express 4.21.2; Sequelize 6.37.5; mysql2 3.12.0.
 - Vue 2.7.16; Vuetify 2.7.2; Axios 1.7.9; esbuild 0.24.2.
 - MySQL 8.4 para ejecución reproducible con Docker Compose.
@@ -45,10 +45,9 @@ Las dependencias apuntan hacia el dominio: las reglas de negocio no importan Exp
 
 ## Instalación rápida
 
-Se requieren Node.js, npm y Docker Desktop con `docker compose`.
+Se requieren Node.js, npm y Docker Desktop con `docker compose`. Clonar este repositorio y ejecutar:
 
 ```bash
-git clone <URL_DEL_REPOSITORIO>
 cd pos-ai-native
 docker compose up -d db
 cp .env.example .env
@@ -110,9 +109,12 @@ Las respuestas de error usan `{ "error": "CODIGO", "message": "Mensaje" }`. Un c
 ```bash
 npm test
 npm run build
+npm run smoke  # requiere MySQL y el backend en ejecución
 ```
 
 Además de los casos automatizados, verificar en el navegador: creación, búsqueda por nombre y barcode, añadir y quitar productos, cambio de precio, total, guardado y limpieza de la venta. Consultar `sales` y `sale_items` en MySQL para comprobar la persistencia y ejecutar una venta con producto inexistente para confirmar que no aparece una cabecera parcial.
+
+El smoke test crea un producto y una venta de prueba con barcode único en la base configurada; ejecutarlo solo contra una instancia de desarrollo. En la instancia local de verificación pasaron la creación, ambas búsquedas, el conflicto por barcode, el precio de venta modificado, el detalle persistido y el rollback de una venta inválida. También se completaron manualmente en navegador los flujos de creación, búsqueda, edición, eliminación y guardado.
 
 ## Git y uso de IA
 
@@ -122,7 +124,7 @@ Se utilizó **OpenAI Codex** como agente que trabajó directamente sobre el repo
 
 **Revisión personal del candidato antes de enviar:** ejecutar el flujo completo, leer el diff y el procedimiento, confirmar que puede explicar las decisiones y registrar aquí cualquier corrección o propuesta de IA descartada por él. Codex no puede atribuirse esa revisión personal en su nombre.
 
-**Tiempo aproximado:** completar con el tiempo real al terminar la revisión personal. Entregables principales: catálogo de productos, venta con procedimiento MySQL, documentación y verificación.
+**Tiempo aproximado de desarrollo asistido:** 30 minutos al cierre de la primera versión funcional, más la revisión personal y la publicación que realice el candidato. Entregables principales: catálogo de productos, venta con procedimiento MySQL, documentación y verificación.
 
 ## Consideraciones
 

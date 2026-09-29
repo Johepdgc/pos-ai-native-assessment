@@ -2,7 +2,6 @@ import Vue from 'vue';
 import Vuetify from 'vuetify';
 import axios from 'axios';
 import 'vuetify/dist/vuetify.min.css';
-import '@mdi/font/css/materialdesignicons.min.css';
 import './style.css';
 
 Vue.use(Vuetify);
@@ -13,7 +12,7 @@ new Vue({
   data: () => ({
     products: [], search: '', loading: false, saving: false, dialog: false, formValid: false,
     form: { name: '', barcode: '', price: '' }, notice: '', noticeType: 'success', searchTimer: null,
-    cart: [], nextLineKey: 1, savingSale: false
+    cart: [], nextLineKey: 1, savingSale: false, searchRequest: 0
   }),
   computed: {
     cartValid() { return this.cart.every(this.validLine); },
@@ -22,7 +21,7 @@ new Vue({
   created() { this.loadProducts(); },
   methods: {
     money(value) { return new Intl.NumberFormat('es-SV', { style: 'currency', currency: 'USD' }).format(Number(value)); },
-    validPrice(value) { return /^(?:0|[1-9]\d{0,9})(?:\.\d{1,2})?$/.test(String(value ?? '').trim()) && Number(value) > 0; },
+    validPrice(value) { return /^(?:0|[1-9]\d{0,5})(?:\.\d{1,2})?$/.test(String(value ?? '').trim()) && Number(value) > 0; },
     validLine(line) { return this.validPrice(line.unitPrice) && Number.isInteger(Number(line.quantity)) && line.quantity >= 1 && line.quantity <= 999; },
     lineTotalCents(line) { return Math.round(Number(line.unitPrice) * 100) * Number(line.quantity); },
     addToSale(product) { this.cart.push({ key: this.nextLineKey++, productId: product.id, name: product.name, unitPrice: String(product.price), quantity: 1 }); this.notice = ''; },
@@ -30,10 +29,13 @@ new Vue({
     showError(error) { this.noticeType = 'error'; this.notice = error.response?.data?.message || 'No se pudo completar la operación. Inténtalo de nuevo.'; },
     scheduleSearch() { clearTimeout(this.searchTimer); this.searchTimer = setTimeout(() => this.loadProducts(), 250); },
     async loadProducts() {
+      const request = ++this.searchRequest;
       this.loading = true;
-      try { this.products = (await axios.get('/api/products', { params: { search: this.search || '' } })).data; }
-      catch (error) { this.showError(error); }
-      finally { this.loading = false; }
+      try {
+        const { data } = await axios.get('/api/products', { params: { search: this.search || '' } });
+        if (request === this.searchRequest) this.products = data;
+      } catch (error) { if (request === this.searchRequest) this.showError(error); }
+      finally { if (request === this.searchRequest) this.loading = false; }
     },
     closeDialog() { this.dialog = false; this.form = { name: '', barcode: '', price: '' }; this.$refs.form?.resetValidation(); },
     async saveProduct() {

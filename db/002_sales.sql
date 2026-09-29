@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS sale_items (
   KEY ix_sale_items_product_id (product_id),
   CONSTRAINT fk_sale_items_sale FOREIGN KEY (sale_id) REFERENCES sales(id),
   CONSTRAINT fk_sale_items_product FOREIGN KEY (product_id) REFERENCES products(id),
-  CONSTRAINT chk_sale_items_price CHECK (unit_price > 0),
+  CONSTRAINT chk_sale_items_price CHECK (unit_price > 0 AND unit_price <= 999999.99),
   CONSTRAINT chk_sale_items_quantity CHECK (quantity > 0)
 ) ENGINE=InnoDB;
 
@@ -68,7 +68,7 @@ BEGIN
     SET v_quantity = CAST(JSON_UNQUOTE(JSON_EXTRACT(p_items, CONCAT('$[', v_index, '].quantity'))) AS UNSIGNED);
     SET v_price_text = JSON_UNQUOTE(JSON_EXTRACT(p_items, CONCAT('$[', v_index, '].unitPrice')));
     IF v_product_id = 0 OR v_quantity < 1 OR v_quantity > 999
-      OR v_price_text NOT REGEXP '^(0|[1-9][0-9]{0,9})([.][0-9]{1,2})?$' THEN
+      OR v_price_text NOT REGEXP '^(0|[1-9][0-9]{0,5})([.][0-9]{1,2})?$' THEN
       SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Una línea de venta contiene valores inválidos.';
     END IF;
     SET v_unit_price = CAST(v_price_text AS DECIMAL(12,2));
