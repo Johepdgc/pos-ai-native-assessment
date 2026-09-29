@@ -1,0 +1,24 @@
+{
+  "name": "pos-ai-native-assessment",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "start": "node backend/src/server.js",
+    "dev": "npm run build && npm start",
+    "test": "node --test backend/test/*.test.js"
+  },
+  "dependencies": {
+    "@mdi/font": "7.4.47",
+    "axios": "1.7.9",
+    "dotenv": "16.4.7",
+    "express": "4.21.2",
+    "mysql2": "3.12.0",
+    "sequelize": "6.37.5",
+    "vue": "2.7.16",
+    "vuetify": "2.7.2"
+  },
+  "devDependencies": {
+    "esbuild": "0.24.2"
+  }
+}
