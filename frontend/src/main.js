@@ -10,8 +10,8 @@ new Vue({
   el: '#app',
   vuetify: new Vuetify({ theme: { themes: { light: { primary: '#17665e', secondary: '#e4a64c' } } } }),
   data: () => ({
-    products: [], search: '', loading: false, saving: false, dialog: false, formValid: false,
-    form: { name: '', barcode: '', price: '' }, notice: '', noticeType: 'success', searchTimer: null,
+    products: [], search: new URLSearchParams(window.location.search).get('search') || '', loading: false, saving: false, dialog: false, formValid: false,
+    form: { name: '', barcode: '', price: '' }, formError: '', barcodeError: '', notice: '', noticeType: 'success', searchTimer: null,
     cart: [], nextLineKey: 1, savingSale: false, searchRequest: 0, removedLines: [], undoTimer: null
   }),
   computed: {
@@ -49,7 +49,14 @@ new Vue({
       event.returnValue = '';
     },
     showError(error) { this.noticeType = 'error'; this.notice = error.response?.data?.message || 'No se pudo completar la operación. Inténtalo de nuevo.'; },
-    scheduleSearch() { clearTimeout(this.searchTimer); this.searchTimer = setTimeout(() => this.loadProducts(), 250); },
+    scheduleSearch() {
+      clearTimeout(this.searchTimer);
+      const url = new URL(window.location.href);
+      if (this.search.trim()) url.searchParams.set('search', this.search.trim());
+      else url.searchParams.delete('search');
+      window.history.replaceState(null, '', url);
+      this.searchTimer = setTimeout(() => this.loadProducts(), 250);
+    },
     async loadProducts() {
       const request = ++this.searchRequest;
       this.loading = true;
@@ -59,9 +66,10 @@ new Vue({
       } catch (error) { if (request === this.searchRequest) this.showError(error); }
       finally { if (request === this.searchRequest) this.loading = false; }
     },
-    closeDialog() { this.dialog = false; this.form = { name: '', barcode: '', price: '' }; this.$refs.form?.resetValidation(); },
+    closeDialog() { this.dialog = false; this.form = { name: '', barcode: '', price: '' }; this.formError = ''; this.barcodeError = ''; this.$refs.form?.resetValidation(); },
     async saveProduct() {
       if (this.saving) return;
+      this.formError = ''; this.barcodeError = '';
       if (!this.$refs.form.validate()) {
         this.$nextTick(() => this.$refs.form.$el.querySelector('.v-input--has-state input')?.focus());
         return;
@@ -71,8 +79,12 @@ new Vue({
         await axios.post('/api/products', this.form);
         this.closeDialog(); this.noticeType = 'success'; this.notice = 'Producto creado correctamente.';
         await this.loadProducts();
-      } catch (error) { this.showError(error); }
-      finally { this.saving = false; }
+      } catch (error) {
+        if (error.response?.status === 409) {
+          this.barcodeError = error.response.data.message;
+          this.$nextTick(() => this.$refs.form.$el.querySelector('[name="product-barcode"]')?.focus());
+        } else this.formError = error.response?.data?.message || 'No se pudo guardar el producto. Inténtalo de nuevo.';
+      } finally { this.saving = false; }
     },
     async saveSale() {
       if (!this.cart.length || !this.cartValid || this.savingSale) return;
