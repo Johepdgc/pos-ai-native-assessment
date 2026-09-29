@@ -121,11 +121,18 @@ El smoke test crea un producto y una venta de prueba con barcode único en la ba
 
 La rama de entrega es `ProductionEnv`. `feature/products` contiene el primer entregable y `feature/sales` el segundo; cada una se integró con un merge identificable. Se conservaron commits separados para que la secuencia pueda revisarse.
 
-Se utilizó **OpenAI Codex** como agente que trabajó directamente sobre el repositorio: definió el diseño inicial, creó archivos, integró frontend y backend, preparó SQL, ejecutó compilaciones y depuró los errores observados. El criterio técnico aplicado al revisar sus propuestas fue mantener el dominio independiente de los frameworks, usar `DECIMAL` en MySQL y centavos enteros en los cálculos del cliente, conservar precios históricos por línea y validar nuevamente en servidor y procedimiento. Se descartó usar el procedimiento solo para una consulta simple porque aportaba menos evidencia sobre atomicidad de ventas.
+Se utilizó **OpenAI Codex** como agente que trabajó directamente sobre el repositorio: definió el diseño inicial, creó archivos, integró frontend y backend, preparó SQL, ejecutó compilaciones, verificó flujos y corrigió los problemas observados.
 
-**Revisión personal del candidato antes de enviar:** ejecutar el flujo completo, leer el diff y el procedimiento, confirmar que puede explicar las decisiones y registrar aquí cualquier corrección o propuesta de IA descartada por él. Codex no puede atribuirse esa revisión personal en su nombre.
+### Decisiones técnicas relevantes tomadas por el candidato y propuestas de IA modificadas o descartadas
 
-**Tiempo aproximado de desarrollo asistido:** 30 minutos al cierre de la primera versión funcional, más la revisión personal y la publicación que realice el candidato. Entregables principales: catálogo de productos, venta con procedimiento MySQL, documentación y verificación.
+- **Propuestas explícitas del candidato:** aplicar los principios **SOLID** y organizar el proyecto con **arquitectura hexagonal**; priorizar la calidad del código y la funcionalidad dentro del plazo de la prueba. Después solicitó revisar UI y UX con las Web Interface Guidelines antes de cerrar la entrega.
+- **Decisiones propuestas e implementadas por Codex:** separar dominio, casos de uso y adaptadores; mantener el dominio independiente de Express, Sequelize y Vue; usar `DECIMAL` en MySQL y centavos enteros para los cálculos del cliente; conservar el precio usado en cada línea de venta; validar en el cliente, el servidor y el procedimiento; y registrar la venta mediante un procedimiento almacenado real dentro de una transacción. La decisión de no limitar el procedimiento a una consulta simple fue de Codex para demostrar persistencia atómica y rollback.
+- **Modificaciones o descartes del candidato a propuestas de IA:** en el intercambio no quedó documentada una propuesta técnica concreta de Codex que el candidato haya modificado o descartado personalmente. No se le atribuye una decisión que no consta en el registro.
+- **Participación verificable del candidato:** facilitó la prueba y los criterios de arquitectura, completó el acceso necesario para publicar el repositorio, ejecutó la aplicación en su terminal y confirmó que funcionaba. La revisión de UI y UX y las correcciones resultantes fueron solicitadas por él y ejecutadas por Codex.
+
+**Revisión personal antes de enviar:** el candidato ya confirmó el funcionamiento de la aplicación. Aún debe leer personalmente el diff y el procedimiento, confirmar que puede explicar las decisiones y anotar aquí cualquier corrección o propuesta de IA que realmente decida modificar o descartar. Codex no puede atribuirse esa revisión personal en su nombre.
+
+**Tiempo aproximado de desarrollo asistido:** 30 minutos hasta la primera versión funcional, más el tiempo de ajustes, publicación y revisión posterior. Entregables principales: catálogo de productos, venta con procedimiento MySQL, documentación y verificación.
 
 ## Consideraciones
 
