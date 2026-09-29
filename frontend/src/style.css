@@ -7,3 +7,26 @@ body{margin:0;background:#f5f7f3}.v-application{font-family:'DM Sans',sans-serif
 @media(max-width:700px){.sale-panel{padding:19px}.product-row{gap:9px}.product-avatar{width:36px;height:36px}.add-label{display:none}.product-row .v-btn{min-width:33px;padding:0 5px}}
 
 .button-symbol{font-size:20px;line-height:1;margin-right:8px}.empty-symbol{font:600 42px Manrope;color:#b6c7bd;line-height:1.2}
+
+/* Keyboard, touch, and compact-layout affordances. */
+html{scroll-behavior:smooth}
+button,.v-btn,a{touch-action:manipulation;-webkit-tap-highlight-color:rgba(23,102,94,.15)}
+.skip-link{position:absolute;z-index:1000;top:8px;left:8px;padding:10px 14px;border-radius:8px;background:#fff;color:#153a38;transform:translateY(-150%);font-weight:700}
+.skip-link:focus-visible{transform:translateY(0);outline:3px solid #e4a64c;outline-offset:2px}
+.v-btn:focus-visible,.undo-button:focus-visible{outline:3px solid #b66e15!important;outline-offset:3px}
+.v-input:focus-within .v-input__slot{outline:2px solid #17665e;outline-offset:2px}
+.v-dialog{overscroll-behavior:contain}
+h1,h2,.dialog-title{text-wrap:balance}
+.product-copy strong,.cart-line-top strong{overflow-wrap:anywhere}
+.product-copy span{overflow-wrap:anywhere;color:#53685d}
+.count-label{color:#53685d;font-variant-numeric:tabular-nums}
+.dialog-subtitle,.intro-row p{color:#52665b}
+.product-price,.line-subtotal,.total-row strong{font-variant-numeric:tabular-nums}
+.product-row .v-btn{min-height:40px;min-width:40px}
+.cart-line-top .v-btn{min-width:40px;min-height:40px}
+.cart-line-top strong{min-width:0}
+.cart-list{overscroll-behavior:contain}
+.undo-notice{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;margin-top:12px;border-radius:10px;background:#e9f3ef;color:#183f37;font-size:13px}
+.undo-button{border:0;background:transparent;color:#075b50;font:700 13px 'DM Sans',sans-serif;text-decoration:underline;cursor:pointer;padding:8px}
+@media(max-width:700px){.product-row .v-btn,.cart-line-top .v-btn{min-width:44px;min-height:44px}.cart-line-fields{grid-template-columns:minmax(0,1fr) minmax(88px,100px)}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}

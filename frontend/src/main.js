@@ -12,20 +12,42 @@ new Vue({
   data: () => ({
     products: [], search: '', loading: false, saving: false, dialog: false, formValid: false,
     form: { name: '', barcode: '', price: '' }, notice: '', noticeType: 'success', searchTimer: null,
-    cart: [], nextLineKey: 1, savingSale: false, searchRequest: 0
+    cart: [], nextLineKey: 1, savingSale: false, searchRequest: 0, removedLines: [], undoTimer: null
   }),
   computed: {
     cartValid() { return this.cart.every(this.validLine); },
     totalCents() { return this.cart.reduce((sum, line) => sum + (this.validLine(line) ? this.lineTotalCents(line) : 0), 0); }
   },
   created() { this.loadProducts(); },
+  mounted() { window.addEventListener('beforeunload', this.warnUnsavedSale); },
+  beforeDestroy() { window.removeEventListener('beforeunload', this.warnUnsavedSale); clearTimeout(this.searchTimer); clearTimeout(this.undoTimer); },
   methods: {
     money(value) { return new Intl.NumberFormat('es-SV', { style: 'currency', currency: 'USD' }).format(Number(value)); },
     validPrice(value) { return /^(?:0|[1-9]\d{0,5})(?:\.\d{1,2})?$/.test(String(value ?? '').trim()) && Number(value) > 0; },
-    validLine(line) { return this.validPrice(line.unitPrice) && Number.isInteger(Number(line.quantity)) && line.quantity >= 1 && line.quantity <= 999; },
+    validQuantity(value) { return Number.isInteger(Number(value)) && Number(value) >= 1 && Number(value) <= 999; },
+    validLine(line) { return this.validPrice(line.unitPrice) && this.validQuantity(line.quantity); },
     lineTotalCents(line) { return Math.round(Number(line.unitPrice) * 100) * Number(line.quantity); },
     addToSale(product) { this.cart.push({ key: this.nextLineKey++, productId: product.id, name: product.name, unitPrice: String(product.price), quantity: 1 }); this.notice = ''; },
-    removeFromSale(key) { this.cart = this.cart.filter(line => line.key !== key); },
+    removeFromSale(key) {
+      const index = this.cart.findIndex(line => line.key === key);
+      if (index < 0) return;
+      const [line] = this.cart.splice(index, 1);
+      clearTimeout(this.undoTimer);
+      this.removedLines.push({ line, index });
+      this.undoTimer = setTimeout(() => { this.removedLines = []; }, 8000);
+    },
+    undoRemoval() {
+      if (!this.removedLines.length) return;
+      const { line, index } = this.removedLines.pop();
+      this.cart.splice(Math.min(index, this.cart.length), 0, line);
+      clearTimeout(this.undoTimer);
+      if (this.removedLines.length) this.undoTimer = setTimeout(() => { this.removedLines = []; }, 8000);
+    },
+    warnUnsavedSale(event) {
+      if (!this.cart.length) return;
+      event.preventDefault();
+      event.returnValue = '';
+    },
     showError(error) { this.noticeType = 'error'; this.notice = error.response?.data?.message || 'No se pudo completar la operación. Inténtalo de nuevo.'; },
     scheduleSearch() { clearTimeout(this.searchTimer); this.searchTimer = setTimeout(() => this.loadProducts(), 250); },
     async loadProducts() {
@@ -39,7 +61,11 @@ new Vue({
     },
     closeDialog() { this.dialog = false; this.form = { name: '', barcode: '', price: '' }; this.$refs.form?.resetValidation(); },
     async saveProduct() {
-      if (!this.$refs.form.validate() || this.saving) return;
+      if (this.saving) return;
+      if (!this.$refs.form.validate()) {
+        this.$nextTick(() => this.$refs.form.$el.querySelector('.v-input--has-state input')?.focus());
+        return;
+      }
       this.saving = true;
       try {
         await axios.post('/api/products', this.form);
@@ -54,8 +80,8 @@ new Vue({
       try {
         const items = this.cart.map(line => ({ productId: line.productId, quantity: Number(line.quantity), unitPrice: Number(line.unitPrice).toFixed(2) }));
         const { data } = await axios.post('/api/sales', { items });
-        this.cart = []; this.noticeType = 'success'; this.notice = `Venta #${data.id} guardada por ${this.money(data.total)}.`;
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        this.cart = []; this.removedLines = []; clearTimeout(this.undoTimer); this.noticeType = 'success'; this.notice = `Venta #${data.id} guardada por ${this.money(data.total)}.`;
+        window.scrollTo({ top: 0, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
       } catch (error) { this.showError(error); }
       finally { this.savingSale = false; }
     }

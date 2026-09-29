@@ -5,40 +5,44 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="#153a38">
   <title>Mostrador · Punto de venta</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="/app.css">
 </head>
 <body>
   <div id="app">
     <v-app>
+      <a class="skip-link" href="#main-content">Saltar al contenido principal</a>
       <header class="topbar">
         <div class="brand"><span class="brand-mark">M</span><div><strong>Mostrador</strong><small>PUNTO DE VENTA</small></div></div>
         <span class="topbar-note">Una venta a la vez, sin distracciones.</span>
       </header>
-      <v-main>
+      <v-main id="main-content" tabindex="-1">
         <div class="workspace">
           <div class="intro-row">
             <div><div class="eyebrow">OPERACIÓN DIARIA</div><h1>Tu mostrador, en orden.</h1><p>Busca productos y registra la siguiente venta.</p></div>
             <v-btn color="primary" depressed large @click.native="dialog = true"><span class="button-symbol" aria-hidden="true">+</span> Nuevo producto</v-btn>
           </div>
-          <v-alert v-if="notice" dense :icon="false" :type="noticeType">{{ notice }}</v-alert>
+          <v-alert v-if="notice" dense :icon="false" :type="noticeType" :role="noticeType === 'error' ? 'alert' : 'status'" aria-live="polite">{{ notice }}</v-alert>
           <div class="main-grid"><section class="catalog-panel">
             <div class="section-head"><div><div class="eyebrow">CATÁLOGO</div><h2>Productos</h2></div><span class="count-label">{{ products.length }} {{ products.length === 1 ? 'resultado' : 'resultados' }}</span></div>
-            <v-text-field v-model="search" solo flat hide-details label="Buscar por nombre o código de barras" class="search-input" @input="scheduleSearch"></v-text-field>
+            <v-text-field v-model="search" solo flat hide-details label="Buscar por nombre o código de barras" class="search-input" name="product-search" type="search" autocomplete="off" :spellcheck="false" @input="scheduleSearch"></v-text-field>
             <div v-if="loading" class="empty-state">Buscando productos…</div>
             <div v-else-if="products.length === 0" class="empty-state"><span class="empty-symbol" aria-hidden="true">□</span><strong>No hay productos para mostrar</strong><span>Crea uno nuevo o prueba otra búsqueda.</span></div>
             <div v-else class="product-list">
-              <div v-for="product in products" :key="product.id" class="product-row"><div class="product-avatar">{{ product.name.charAt(0).toUpperCase() }}</div><div class="product-copy"><strong>{{ product.name }}</strong><span>{{ product.barcode }}</span></div><strong class="product-price">{{ money(product.price) }}</strong><v-btn small outlined color="primary" @click.native="addToSale(product)" :aria-label="'Agregar ' + product.name + ' a la venta'"><span aria-hidden="true">+</span><span class="add-label">Agregar</span></v-btn></div>
+              <div v-for="product in products" :key="product.id" class="product-row"><div class="product-avatar" aria-hidden="true">{{ product.name.charAt(0).toUpperCase() }}</div><div class="product-copy"><strong>{{ product.name }}</strong><span>{{ product.barcode }}</span></div><strong class="product-price">{{ money(product.price) }}</strong><v-btn small outlined color="primary" @click.native="addToSale(product)" :aria-label="'Agregar ' + product.name + ' a la venta'"><span aria-hidden="true">+</span><span class="add-label">Agregar</span></v-btn></div>
             </div>
           </section>
           <section class="sale-panel"><div class="section-head"><div><div class="eyebrow">VENTA ACTUAL</div><h2>Resumen</h2></div><span class="count-label">{{ cart.length }} {{ cart.length === 1 ? 'línea' : 'líneas' }}</span></div>
             <div v-if="cart.length === 0" class="empty-state sale-empty"><span class="empty-symbol" aria-hidden="true">◇</span><strong>La venta está vacía</strong><span>Agrega productos del catálogo para comenzar.</span></div>
-            <div v-else class="cart-list"><div v-for="line in cart" :key="line.key" class="cart-line"><div class="cart-line-top"><strong>{{ line.name }}</strong><v-btn icon small color="grey" @click.native="removeFromSale(line.key)" :aria-label="'Eliminar ' + line.name"><span aria-hidden="true">×</span></v-btn></div><div class="cart-line-fields"><v-text-field v-model="line.unitPrice" label="Precio de venta" prefix="$" type="text" inputmode="decimal" outlined dense hide-details></v-text-field><v-text-field v-model.number="line.quantity" label="Cantidad" type="number" min="1" max="999" outlined dense hide-details></v-text-field></div><div class="line-subtotal">{{ validLine(line) ? money(lineTotalCents(line) / 100) : 'Revisa precio y cantidad' }}</div></div></div>
-            <div class="sale-footer"><div class="total-row"><span>Total</span><strong>{{ money(totalCents / 100) }}</strong></div><p v-if="cart.length && !cartValid" class="field-warning">Corrige los precios o cantidades antes de guardar.</p><v-btn color="primary" depressed block large :disabled="!cart.length || !cartValid" :loading="savingSale" @click.native="saveSale"><span class="button-symbol" aria-hidden="true">✓</span>Guardar venta</v-btn></div>
+            <div v-else class="cart-list"><div v-for="line in cart" :key="line.key" class="cart-line"><div class="cart-line-top"><strong>{{ line.name }}</strong><v-btn icon small color="grey" @click.native="removeFromSale(line.key)" :aria-label="'Eliminar ' + line.name"><span aria-hidden="true">×</span></v-btn></div><div class="cart-line-fields"><v-text-field v-model="line.unitPrice" label="Precio de venta" :name="'sale-price-' + line.key" prefix="$" type="text" inputmode="decimal" autocomplete="off" outlined dense :error-messages="validPrice(line.unitPrice) ? [] : ['Precio inválido; usa hasta 2 decimales']"></v-text-field><v-text-field v-model.number="line.quantity" label="Cantidad" :name="'sale-quantity-' + line.key" type="number" inputmode="numeric" min="1" max="999" autocomplete="off" outlined dense :error-messages="validQuantity(line.quantity) ? [] : ['Usa de 1 a 999 unidades']"></v-text-field></div><div class="line-subtotal">{{ validLine(line) ? money(lineTotalCents(line) / 100) : 'Revisa precio y cantidad' }}</div></div></div>
+            <div v-if="removedLines.length" class="undo-notice" role="status" aria-live="polite"><span>{{ removedLines.length }} {{ removedLines.length === 1 ? 'producto quitado' : 'productos quitados' }} de la venta.</span><button type="button" class="undo-button" @click="undoRemoval">Deshacer</button></div>
+            <div class="sale-footer"><div class="total-row"><span>{{ cartValid ? 'Total' : 'Total pendiente' }}</span><strong>{{ cartValid ? money(totalCents / 100) : '—' }}</strong></div><p v-if="cart.length && !cartValid" class="field-warning">Corrige los precios o cantidades antes de guardar.</p><v-btn color="primary" depressed block large :disabled="!cart.length || !cartValid" :loading="savingSale" @click.native="saveSale"><span class="button-symbol" aria-hidden="true">✓</span>Guardar venta</v-btn></div>
           </section></div>
         </div>
       </v-main>
       <v-dialog v-model="dialog" max-width="480" persistent>
-        <v-card class="product-dialog"><v-card-title class="dialog-title">Nuevo producto</v-card-title><v-card-text><p class="dialog-subtitle">Agrega un producto al catálogo para encontrarlo en una venta.</p><v-form ref="form" v-model="formValid" @submit.prevent="saveProduct"><v-text-field v-model="form.name" label="Nombre" outlined dense :rules="[v => !!v && v.trim().length >= 2 || 'Escribe al menos 2 caracteres']"></v-text-field><v-text-field v-model="form.barcode" label="Código de barras" outlined dense :rules="[v => /^[A-Za-z0-9._-]{3,80}$/.test(v || '') || 'Usa entre 3 y 80 letras, números, puntos, guiones o guion bajo']"></v-text-field><v-text-field v-model="form.price" label="Precio" outlined dense prefix="$" inputmode="decimal" :rules="[v => validPrice(v) || 'Indica entre 0.01 y 999999.99, con hasta 2 decimales']"></v-text-field></v-form></v-card-text><v-card-actions><v-spacer></v-spacer><v-btn text @click.native="closeDialog">Cancelar</v-btn><v-btn color="primary" depressed :loading="saving" @click.native="saveProduct">Guardar producto</v-btn></v-card-actions></v-card>
+        <v-card class="product-dialog"><v-card-title class="dialog-title">Nuevo producto</v-card-title><v-card-text><p class="dialog-subtitle">Agrega un producto al catálogo para encontrarlo en una venta.</p><v-form ref="form" v-model="formValid" @submit.prevent="saveProduct"><v-text-field v-model="form.name" label="Nombre" name="product-name" autocomplete="off" outlined dense :rules="[v => !!v && v.trim().length >= 2 || 'Escribe al menos 2 caracteres']"></v-text-field><v-text-field v-model="form.barcode" label="Código de barras" name="product-barcode" autocomplete="off" :spellcheck="false" outlined dense :rules="[v => /^[A-Za-z0-9._-]{3,80}$/.test(v || '') || 'Usa entre 3 y 80 letras, números, puntos, guiones o guion bajo']"></v-text-field><v-text-field v-model="form.price" label="Precio" name="product-price" autocomplete="off" outlined dense prefix="$" inputmode="decimal" :rules="[v => validPrice(v) || 'Indica entre 0.01 y 999999.99, con hasta 2 decimales']"></v-text-field></v-form></v-card-text><v-card-actions><v-spacer></v-spacer><v-btn text :disabled="saving" @click.native="closeDialog">Cancelar</v-btn><v-btn color="primary" depressed :loading="saving" @click.native="saveProduct">Guardar producto</v-btn></v-card-actions></v-card>
       </v-dialog>
     </v-app>
   </div>
