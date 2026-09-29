@@ -27,6 +27,7 @@ CREATE TABLE IF NOT EXISTS sale_items (
 
 DROP PROCEDURE IF EXISTS sp_register_sale;
 DELIMITER $$
+-- El adaptador Sequelize abre la transacción antes de invocar este procedimiento.
 CREATE PROCEDURE sp_register_sale(
   IN p_items LONGTEXT,
   OUT p_sale_id BIGINT UNSIGNED,
@@ -58,9 +59,9 @@ BEGIN
   SET p_sale_id = LAST_INSERT_ID();
 
   WHILE v_index < v_count DO
-    IF JSON_TYPE(JSON_EXTRACT(p_items, CONCAT('$[', v_index, '].productId'))) <> 'INTEGER'
-      OR JSON_TYPE(JSON_EXTRACT(p_items, CONCAT('$[', v_index, '].quantity'))) <> 'INTEGER'
-      OR JSON_TYPE(JSON_EXTRACT(p_items, CONCAT('$[', v_index, '].unitPrice'))) <> 'STRING' THEN
+    IF COALESCE(JSON_TYPE(JSON_EXTRACT(p_items, CONCAT('$[', v_index, '].productId'))), '') <> 'INTEGER'
+      OR COALESCE(JSON_TYPE(JSON_EXTRACT(p_items, CONCAT('$[', v_index, '].quantity'))), '') <> 'INTEGER'
+      OR COALESCE(JSON_TYPE(JSON_EXTRACT(p_items, CONCAT('$[', v_index, '].unitPrice'))), '') <> 'STRING' THEN
       SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Una línea de venta tiene un formato inválido.';
     END IF;
 
