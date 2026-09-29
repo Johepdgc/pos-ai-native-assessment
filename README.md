@@ -45,10 +45,11 @@ Las dependencias apuntan hacia el dominio: las reglas de negocio no importan Exp
 
 ## Instalación rápida
 
-Se requieren Node.js, npm y Docker Desktop con `docker compose`. Clonar este repositorio y ejecutar:
+Se requieren Node.js, npm y Docker Desktop con `docker compose`:
 
 ```bash
-cd pos-ai-native
+git clone https://github.com/Johepdgc/pos-ai-native-assessment.git
+cd pos-ai-native-assessment
 docker compose up -d db
 cp .env.example .env
 npm ci
