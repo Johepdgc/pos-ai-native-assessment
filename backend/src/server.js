@@ -1,7 +1,9 @@
 require('dotenv').config();
 const { createDatabase } = require('./infrastructure/database');
 const { createProductRepository } = require('./infrastructure/productRepository');
+const { createSaleRepository } = require('./infrastructure/saleRepository');
 const { createProductsUseCases } = require('./application/products');
+const { createSalesUseCases } = require('./application/sales');
 const { createApp } = require('./http/app');
 
 async function main() {
@@ -14,7 +16,8 @@ async function main() {
   });
   await db.sequelize.authenticate();
   const products = createProductsUseCases(createProductRepository(db.Product));
-  const app = createApp({ products });
+  const sales = createSalesUseCases(createSaleRepository(db.sequelize));
+  const app = createApp({ products, sales });
   const port = Number(process.env.PORT || 3000);
   app.listen(port, () => console.log(`POS disponible en http://localhost:${port}`));
 }

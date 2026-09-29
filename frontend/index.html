@@ -17,19 +17,24 @@
       <v-main>
         <div class="workspace">
           <div class="intro-row">
-            <div><div class="eyebrow">OPERACIÓN DIARIA</div><h1>Tu mostrador, en orden.</h1><p>Busca productos y prepara la siguiente venta.</p></div>
+            <div><div class="eyebrow">OPERACIÓN DIARIA</div><h1>Tu mostrador, en orden.</h1><p>Busca productos y registra la siguiente venta.</p></div>
             <v-btn color="primary" depressed large @click="dialog = true"><v-icon left>mdi-plus</v-icon> Nuevo producto</v-btn>
           </div>
           <v-alert v-if="notice" dense dismissible :type="noticeType" @input="notice = ''">{{ notice }}</v-alert>
-          <section class="catalog-panel">
+          <div class="main-grid"><section class="catalog-panel">
             <div class="section-head"><div><div class="eyebrow">CATÁLOGO</div><h2>Productos</h2></div><span class="count-label">{{ products.length }} resultados</span></div>
             <v-text-field v-model="search" solo flat hide-details clearable prepend-inner-icon="mdi-magnify" label="Buscar por nombre o código de barras" class="search-input" @input="scheduleSearch"></v-text-field>
             <div v-if="loading" class="empty-state">Buscando productos…</div>
             <div v-else-if="products.length === 0" class="empty-state"><v-icon large color="grey lighten-1">mdi-package-variant</v-icon><strong>No hay productos para mostrar</strong><span>Crea uno nuevo o prueba otra búsqueda.</span></div>
             <div v-else class="product-list">
-              <div v-for="product in products" :key="product.id" class="product-row"><div class="product-avatar">{{ product.name.charAt(0).toUpperCase() }}</div><div class="product-copy"><strong>{{ product.name }}</strong><span>{{ product.barcode }}</span></div><strong class="product-price">{{ money(product.price) }}</strong></div>
+              <div v-for="product in products" :key="product.id" class="product-row"><div class="product-avatar">{{ product.name.charAt(0).toUpperCase() }}</div><div class="product-copy"><strong>{{ product.name }}</strong><span>{{ product.barcode }}</span></div><strong class="product-price">{{ money(product.price) }}</strong><v-btn small outlined color="primary" @click="addToSale(product)" :aria-label="'Agregar ' + product.name + ' a la venta'"><v-icon small>mdi-plus</v-icon><span class="add-label">Agregar</span></v-btn></div>
             </div>
           </section>
+          <section class="sale-panel"><div class="section-head"><div><div class="eyebrow">VENTA ACTUAL</div><h2>Resumen</h2></div><span class="count-label">{{ cart.length }} líneas</span></div>
+            <div v-if="cart.length === 0" class="empty-state sale-empty"><v-icon large color="grey lighten-1">mdi-cart-outline</v-icon><strong>La venta está vacía</strong><span>Agrega productos del catálogo para comenzar.</span></div>
+            <div v-else class="cart-list"><div v-for="line in cart" :key="line.key" class="cart-line"><div class="cart-line-top"><strong>{{ line.name }}</strong><v-btn icon small color="grey" @click="removeFromSale(line.key)" :aria-label="'Eliminar ' + line.name"><v-icon small>mdi-close</v-icon></v-btn></div><div class="cart-line-fields"><v-text-field v-model="line.unitPrice" label="Precio de venta" prefix="$" type="text" inputmode="decimal" outlined dense hide-details></v-text-field><v-text-field v-model.number="line.quantity" label="Cantidad" type="number" min="1" max="999" outlined dense hide-details></v-text-field></div><div class="line-subtotal">{{ validLine(line) ? money(lineTotalCents(line) / 100) : 'Revisa precio y cantidad' }}</div></div></div>
+            <div class="sale-footer"><div class="total-row"><span>Total</span><strong>{{ money(totalCents / 100) }}</strong></div><p v-if="cart.length && !cartValid" class="field-warning">Corrige los precios o cantidades antes de guardar.</p><v-btn color="primary" depressed block large :disabled="!cart.length || !cartValid" :loading="savingSale" @click="saveSale"><v-icon left>mdi-check</v-icon>Guardar venta</v-btn></div>
+          </section></div>
         </div>
       </v-main>
       <v-dialog v-model="dialog" max-width="480" persistent>
